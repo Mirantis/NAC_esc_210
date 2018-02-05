@@ -52,7 +52,7 @@ __main() {
 
                 else
 
-                    exec -a __main& __exit
+                    __exit
 
                 fi
 done
