@@ -4,8 +4,7 @@ source $(dirname $0)/env
 set -u 
 set -a
 export CHECK1=$(systemctl status docker 2>1 | grep -e running | wc -l)
-export CHECK2=$(docker node inspect docker-wrk1.irondung.net| grep '"com.docker.ucp.access.label": "/Shared"' | wc -l)
-
+export CHECK2=$(docker node inspect $node1 | grep '"com.docker.ucp.access.label": "/Shared"' | wc -l)
 
 __syslog() {
 logger -t $(basename $0) -p user.err "$@";
