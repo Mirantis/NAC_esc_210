@@ -3,7 +3,6 @@ set -e
 source $(dirname $0)/env
 set -u 
 set -a
-count=0
 
 __CHECK1() {
 export CHECK1=$(systemctl status docker 2>1 | grep -e running | wc -l)
@@ -53,5 +52,5 @@ __main() {
                 fi
 done
 }
-
+  count=0
 __main | __syslog
