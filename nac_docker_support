@@ -40,11 +40,11 @@ __main() {
 
                 if [[ $count -eq 0 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] && [[ $CHECK3 -eq 1 ]] && [[ $CHECK4 -eq 1 ]] || [[ $count -gt 0 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] && [[ $CHECK3 -eq 1 ]] && [[ $CHECK4 -eq 1 ]] ; then
 
-                    echo "Worker nodes collations are incorrectly set, moving to correct this issue" && sleep 2 | __syslog
-                    echo "Docker Daemon is running, moving to next validation" && sleep 2 | __syslog
-                    echo "Updating Docker worker's collections" && sleep 2 | __syslog
+                    echo "Worker nodes' collections are incorrectly set, moving to correct this issue" && sleep 2 | __syslog
+                    echo "Docker daemon is running, moving to next validation" && sleep 2 | __syslog
+                    echo "Updating Docker workers' collections" && sleep 2 | __syslog
                     __update_nodes | __syslog && echo "node updates complete" | __syslog
-                    echo "Exiting Successful, worker node's access labels updated to com.docker.ucp.access.label="$collection | __syslog && exit 0
+                    echo "Exiting Successful, worker nodes' access labels updated to com.docker.ucp.access.label="$collection | __syslog && exit 0
 
                 else
 
