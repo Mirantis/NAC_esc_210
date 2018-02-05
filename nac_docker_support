@@ -13,6 +13,14 @@ __CHECK2() {
 export CHECK2=$(docker node inspect $node1 | grep '"com.docker.ucp.access.label": "/Shared"' | wc -l)
 }
 
+__CHECK3() {
+export CHECK3=$(docker node inspect $node2 | grep '"com.docker.ucp.access.label": "/Shared"' | wc -l)
+}
+
+__CHECK4() {
+export CHECK4=$(docker node inspect $node3 | grep '"com.docker.ucp.access.label": "/Shared"' | wc -l)
+}
+
 __syslog() {
 logger -t $(basename $0) -p user.err "$@";
 }
@@ -28,17 +36,20 @@ for x in {$node1,$node2,$node3}; do docker node update --label-add com.docker.uc
 __main() {
         echo "Docker daemon check in process" | __syslog
         __CHECK1 && __CHECK2
-        while true; do
-                if [[ $count -eq 0 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] || [[ $count -lt 1 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] ; then
+            while true; do
 
-                        echo "Worker nodes collations are incorrectly set, moving to correct this issue" && sleep 2 | __syslog
-                        echo "Docker Daemon is running, moving to next validation" && sleep 2 | __syslog
-                        echo "Updating Docker worker's collections" && sleep 2 | __syslog
-                        __update_nodes | __syslog && echo "node updates complete" | __syslog
-                        echo "Exiting Successful, worker node's access labels updated to com.docker.ucp.access.label="$collection | __syslog && exit 0
+                if [[ $count -eq 0 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] && [[ $CHECK3 -eq 1 ]] && [[ $CHECK4 -eq 1 ]] || [[ $count -gt 0 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] && [[ $CHECK3 -eq 1 ]] && [[ $CHECK4 -eq 1 ]] ; then
+
+                    echo "Worker nodes collations are incorrectly set, moving to correct this issue" && sleep 2 | __syslog
+                    echo "Docker Daemon is running, moving to next validation" && sleep 2 | __syslog
+                    echo "Updating Docker worker's collections" && sleep 2 | __syslog
+                    __update_nodes | __syslog && echo "node updates complete" | __syslog
+                    echo "Exiting Successful, worker node's access labels updated to com.docker.ucp.access.label="$collection | __syslog && exit 0
 
                 else
-                        count=$((count+1)) && exec -a __main& __exit
+
+                    count=$((count+1)) && exec -a __main& __exit
+
                 fi
 done
 }
