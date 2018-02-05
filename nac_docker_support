@@ -1,0 +1,40 @@
+#!/bin/bash
+set -e
+source $(dirname $0)/env
+set -u 
+set -a
+export CHECK1=$(systemctl status docker 2>1 | grep -e running | wc -l)
+export CHECK2=$(docker node inspect docker-wrk1.irondung.net| grep '"com.docker.ucp.access.label": "/Shared"' | wc -l)
+
+
+__syslog() {
+logger -t $(basename $0) -p user.err "$@";
+}
+
+__exit() {
+echo "The Docker daemon isn't running or node placement is correct, exiting" | __syslog; exit 1
+}
+
+__update_nodes() {
+for x in {$node1,$node2,$node3}; do docker node update --label-add com.docker.ucp.access.label=$collection $x; done
+}
+
+__main() {
+        echo "Docker daemon check in process" | __syslog
+        count=0
+        while true; do
+                if [[ $count -eq 0 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] || [[ $count -lt 1 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] ; then
+
+                        echo "Worker nodes collations are incorrectly set, moving to correct this issue" && sleep 2 | __syslog
+                        echo "Docker Daemon is running, moving to next validation" && sleep 2 | __syslog
+                        echo "Updating Docker worker's collections" && sleep 2 | __syslog
+                        __update_nodes | __syslog && echo "node updates complete" | __syslog
+                        echo "Exiting Successful, worker node's access labels updated to com.docker.ucp.access.label="$collection | __syslog && exit 0
+
+                else
+                        count=$((count+1)) && exec -a __main& __exit
+                fi
+done
+}
+
+__main | __syslog

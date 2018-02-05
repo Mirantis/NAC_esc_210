@@ -1,0 +1,4 @@
+export node1=docker-wrk1.irondung.net
+export node2=docker-wrk2.irondung.net
+export node3=docker-wrk3.irondung.net
+export collection=/dev
