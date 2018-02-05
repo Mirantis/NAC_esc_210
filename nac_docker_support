@@ -27,8 +27,7 @@ for x in {$node1,$node2,$node3}; do docker node update --label-add com.docker.uc
 
 __main() {
         echo "Docker daemon check in process" | __syslog
-        __CHECK1 && __CHECK2
-        count=0
+        __CHECK1 && __CHECK2 && count=0
         while true; do
                 if [[ $count -eq 0 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] || [[ $count -lt 1 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] ; then
 
