@@ -5,7 +5,7 @@ set -u
 set -a
 
 __CHECK1() {
-export CHECK1=$(systemctl status docker 2>1 | grep -e running | wc -l)
+export CHECK1=$(systemctl status docker 2>/dev/null | grep -e running | wc -l)
 }
 
 __CHECK2() {
