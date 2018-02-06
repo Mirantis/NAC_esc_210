@@ -5,19 +5,12 @@ set -u
 set -a
 
 __CHECK1() {
-export CHECK1=$(systemctl status docker 2>/dev/null | grep -e running | wc -l)
+export check1=$(systemctl status docker 2>/dev/null | grep -e running | wc -l)
 }
 
 __CHECK2() {
-export CHECK2=$(docker node inspect $node1 | grep '"com.docker.ucp.access.label": "/Shared"' | wc -l)
-}
-
-__CHECK3() {
-export CHECK3=$(docker node inspect $node2 | grep '"com.docker.ucp.access.label": "/Shared"' | wc -l)
-}
-
-__CHECK4() {
-export CHECK4=$(docker node inspect $node3 | grep '"com.docker.ucp.access.label": "/Shared"' | wc -l)
+export random=$(shuf -i 1-3 -n 1)
+export check2=$(for x in {$node1,$node2,$node3}; do docker node inspect $x | grep "com.docker.ucp.access.label" | grep "$collection" | wc -l &>/dev/null; done && echo ${PIPESTATUS[@]} | cut -d' ' -f3)
 }
 
 __syslog() {
@@ -33,29 +26,31 @@ for x in {$node1,$node2,$node3}; do docker node update --label-add com.docker.uc
 }
 
 __main() {
-        echo "Docker daemon check in process" | __syslog
-        __CHECK1 && __CHECK2 && __CHECK3 && __CHECK4
+echo "Docker daemon check in process" | __syslog
+__CHECK1 && sleep 2
+__CHECK2 && sleep 2
 
-            while true; do
+        while true; do
 
-                if [[ $count -eq 0 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] && [[ $CHECK3 -eq 1 ]] && [[ $CHECK4 -eq 1 ]] || [[ $count -gt 0 ]] && [[ $CHECK1 -eq 1 ]] && [[ $CHECK2 -eq 1 ]] && [[ $CHECK3 -eq 1 ]] && [[ $CHECK4 -eq 1 ]] ; then
+                if [[ $count -eq 0 ]] && [[ $check1 -eq 1 ]] && [[ $check2 == 1 ]] ; then
 
-                    echo "Worker nodes collations are incorrectly set, moving to correct this issue" && sleep 2 | __syslog
-                    echo "Docker Daemon is running, moving to next validation" && sleep 2 | __syslog
-                    echo "Updating Docker worker's collections" && sleep 2 | __syslog
-                    __update_nodes | __syslog && echo "node updates complete" | __syslog
-                    echo "Exiting Successful, worker node's access labels updated to com.docker.ucp.access.label="$collection | __syslog && exit 0
+                        echo "Worker nodes collections are incorrectly set, moving to correct this issue" && sleep 2 | __syslog
+                        echo "Docker Daemon is running, moving to next validation" && sleep 2 | __syslog
+                        echo "Updating Docker worker's collections" && sleep 2 | __syslog
+                        __update_nodes | __syslog && echo "node updates complete" | __syslog
+                        echo "Exiting Successful, worker node's access labels updated to com.docker.ucp.access.label="$collection | __syslog && exit 0
 
-                elif [[ $count -gt 0 ]] ; then
+                elif [[ $count -gt 50 ]] ; then
 
-                    count=$((count+1)) && exec -a __main&
+                        __exit
 
                 else
 
-                    __exit
+                        exec -a __main& count=$((count+1))
 
                 fi
 done
 }
-  count=0
+
+count=0 && sleep 2
 __main | __syslog
